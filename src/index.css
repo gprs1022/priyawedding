@@ -1,0 +1,320 @@
+:root {
+  /* Classy Royal Midnight Sapphire & Imperial Gold Palette */
+  --bg-obsidian: #050711;
+  --bg-midnight-deep: #0a0f24;
+  --bg-midnight-royal: #141c3d;
+  --bg-card: rgba(12, 18, 40, 0.78);
+  --bg-card-hover: rgba(18, 26, 56, 0.88);
+  
+  /* Imperial Metallic Gold System */
+  --gold-primary: #d4af37;
+  --gold-brushed: #c5a059;
+  --gold-light: #f9ecc8;
+  --gold-champagne: #faf3e0;
+  --gold-dark: #8e6d1e;
+  --gold-gradient: linear-gradient(135deg, #fff5d6 0%, #e2b740 45%, #9a761e 100%);
+  --gold-shimmer: linear-gradient(90deg, #d4af37 0%, #fffbf0 50%, #d4af37 100%);
+  
+  /* Ceremony Signature Accents */
+  --crimson-royal: #c21d38;
+  --haldi-saffron: #f59e0b;
+  --marigold-orange: #f97316;
+  --mehendi-emerald: #10b981;
+  
+  /* Crisp Editorial Ivory & Pearl */
+  --ivory-paper: #fcf9f2;
+  --ivory-pearl: #f6efe2;
+  --text-muted: #d9c49a;
+  --text-light: #f8f3ea;
+  
+  /* Subtle Foils & Shadows */
+  --border-gold: rgba(212, 175, 55, 0.35);
+  --border-gold-bright: rgba(212, 175, 55, 0.8);
+  --shadow-gold: 0 0 32px rgba(212, 175, 55, 0.3);
+  --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.75);
+  
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-editorial: 'Cormorant Garamond', Garamond, serif;
+  --font-sanskrit: 'Rozha One', 'Yatra One', serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #050711;
+  color: var(--text-light);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  position: relative;
+  background: radial-gradient(ellipse at 50% 12%, #141c3d 0%, #0a0f24 45%, #050711 100%);
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #050711;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #d4af37, #141c3d);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f9ecc8;
+}
+
+/* Typography Helpers */
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-editorial {
+  font-family: var(--font-editorial);
+}
+
+.font-sanskrit {
+  font-family: var(--font-sanskrit);
+}
+
+.gold-gradient-text {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.gold-shimmer-text {
+  background: linear-gradient(90deg, #d4af37 0%, #fff9ea 40%, #d4af37 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Three.js Background Canvas */
+.webgl-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Royal Glassmorphic Panel with Fine Gold Trim */
+.royal-glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-gold);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.royal-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+}
+
+/* Ornamental Corners */
+.ornament-corner-tl {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 18px;
+  height: 18px;
+  border-top: 2px solid var(--gold-primary);
+  border-left: 2px solid var(--gold-primary);
+  pointer-events: none;
+}
+.ornament-corner-br {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  border-bottom: 2px solid var(--gold-primary);
+  border-right: 2px solid var(--gold-primary);
+  pointer-events: none;
+}
+
+/* Buttons */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--gold-gradient);
+  color: #070913;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(212, 175, 55, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 26px rgba(212, 175, 55, 0.55);
+}
+
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+.btn-outline-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(16, 22, 42, 0.6);
+  color: var(--gold-light);
+  border: 1px solid var(--border-gold-bright);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.88rem;
+  padding: 10px 22px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-outline-gold:hover {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: var(--gold-light);
+  color: #ffffff;
+}
+
+/* Send Wishes WhatsApp Integrated Button */
+.btn-wishes-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #25D366 0%, #158b41 100%);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  padding: 12px 26px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(37, 211, 102, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-wishes-whatsapp:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.55);
+  background: linear-gradient(135deg, #2ae06d 0%, #179c49 100%);
+}
+
+/* Section Wrapper */
+.section-wrapper {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 90px 24px;
+}
+
+@media (max-width: 768px) {
+  .section-wrapper {
+    padding: 60px 18px;
+  }
+}
+
+/* Responsive Navigation */
+@media (min-width: 769px) {
+  .desktop-nav {
+    display: flex !important;
+  }
+  .mobile-nav-toggle {
+    display: none !important;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-8px);
+  }
+  60% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
