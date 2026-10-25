@@ -318,3 +318,37 @@ body {
     opacity: 0.8;
   }
 }
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Fullscreen Theatre Rules */
+.video-theatre-root:fullscreen,
+.video-theatre-root:-webkit-full-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  border-radius: 0 !important;
+  border: none !important;
+  margin: 0 !important;
+  background: #000000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.video-theatre-root:fullscreen .video-inner-frame,
+.video-theatre-root:-webkit-full-screen .video-inner-frame {
+  width: 100vw !important;
+  height: 100vh !important;
+  padding-top: 0 !important;
+}
+
+
