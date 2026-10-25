@@ -8,10 +8,12 @@ import Ceremonies from './components/Ceremonies';
 import MomentsGallery from './components/MomentsGallery';
 import Blessings from './components/Blessings';
 import Footer from './components/Footer';
+import StoryPosterModal from './components/StoryPosterModal';
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(true);
   const [unmuteVideo, setUnmuteVideo] = useState(false);
+  const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
 
   const handleEnterExperience = () => {
     setShowIntro(false);
@@ -36,17 +38,28 @@ export default function App() {
       {/* Main Experience Layout */}
       {!showIntro && (
         <>
-          <Navbar />
+          <Navbar onOpenStoryModal={() => setIsStoryModalOpen(true)} />
           <main>
-            <Hero onExplore={handleExploreScroll} unmuted={unmuteVideo} />
+            <Hero
+              onExplore={handleExploreScroll}
+              unmuted={unmuteVideo}
+              onOpenStoryModal={() => setIsStoryModalOpen(true)}
+            />
             <TheCouple />
             <Ceremonies />
             <MomentsGallery />
             <Blessings />
           </main>
           <Footer />
+
+          {/* Interactive Wedding Story Poster Generator Modal */}
+          <StoryPosterModal
+            isOpen={isStoryModalOpen}
+            onClose={() => setIsStoryModalOpen(false)}
+          />
         </>
       )}
     </div>
   );
 }
+

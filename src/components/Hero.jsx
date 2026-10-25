@@ -67,7 +67,7 @@ const getNetworkQuality = () => {
   return { quality: 'balanced', isSlow: false, type: 'Standard' };
 };
 
-export default function Hero({ onExplore, unmuted = false }) {
+export default function Hero({ onExplore, unmuted = false, onOpenStoryModal }) {
   const videoRef = useRef(null);
   const theatreRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -834,8 +834,36 @@ export default function Hero({ onExplore, unmuted = false }) {
           </div>
         </div>
 
+        {/* "Create Our Wedding Story ✨" CTA Button */}
+        <div style={{ marginBottom: '28px', textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={onOpenStoryModal}
+            className="btn-story-glow"
+            style={{
+              padding: '13px 28px',
+              fontSize: '1rem',
+              letterSpacing: '0.04em',
+            }}
+          >
+            <Sparkles size={18} color="#0c090b" />
+            <span>Create Our Wedding Story ✨</span>
+          </button>
+          <p
+            style={{
+              marginTop: '8px',
+              fontSize: '0.78rem',
+              color: 'var(--text-muted)',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Generate a personalized 9:16 wedding story to download &amp; share on WhatsApp
+          </p>
+        </div>
+
         {/* Scroll Indicator */}
         <button
+
           onClick={onExplore}
           style={{
             background: 'none',

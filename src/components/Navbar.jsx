@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sparkles } from 'lucide-react';
 
 const WhatsAppIcon = ({ size = 16, color = '#25D366' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{ flexShrink: 0 }}>
@@ -7,7 +7,8 @@ const WhatsAppIcon = ({ size = 16, color = '#25D366' }) => (
   </svg>
 );
 
-export default function Navbar() {
+export default function Navbar({ onOpenStoryModal }) {
+
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -104,6 +105,20 @@ export default function Navbar() {
             </a>
           ))}
 
+          {/* Story Poster Button */}
+          <button
+            type="button"
+            onClick={onOpenStoryModal}
+            className="btn-story-glow"
+            style={{
+              padding: '8px 18px',
+              fontSize: '0.84rem',
+            }}
+          >
+            <Sparkles size={15} color="#0c090b" />
+            <span>Story Poster ✨</span>
+          </button>
+
           {/* Integrated WhatsApp "Send Wishes" Action Button */}
           <a
             href={whatsappUrl}
@@ -170,6 +185,30 @@ export default function Navbar() {
             </a>
           ))}
 
+          {/* Mobile Story Poster Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              onOpenStoryModal();
+            }}
+            className="btn-story-glow"
+            style={{
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '12px',
+              fontSize: '0.92rem',
+              width: '100%',
+              marginTop: '4px',
+            }}
+          >
+            <Sparkles size={17} color="#0c090b" />
+            <span>Create Our Wedding Story ✨</span>
+          </button>
+
           <a
             href={whatsappUrl}
             target="_blank"
@@ -183,7 +222,7 @@ export default function Navbar() {
               justifyContent: 'center',
               gap: '8px',
               padding: '12px',
-              marginTop: '6px',
+              marginTop: '2px',
             }}
           >
             <WhatsAppIcon size={18} color="#12080a" />
@@ -191,6 +230,7 @@ export default function Navbar() {
           </a>
         </div>
       )}
+
     </header>
   );
 }

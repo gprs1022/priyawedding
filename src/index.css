@@ -478,5 +478,50 @@ body {
   }
 }
 
+/* Poster Generator Modal Styles */
+.poster-modal-body {
+  max-height: calc(92vh - 80px);
+}
+
+@media (max-width: 768px) {
+  .poster-modal-container {
+    max-height: 96vh !important;
+    border-radius: 18px !important;
+  }
+
+  .poster-modal-body {
+    flex-direction: column !important;
+    padding: 16px !important;
+    gap: 20px !important;
+    max-height: calc(96vh - 72px) !important;
+  }
+}
+
+/* Glowing Story Button in Hero & Nav */
+.btn-story-glow {
+  background: linear-gradient(135deg, #f7df94 0%, #d4af37 50%, #9a761e 100%);
+  color: #0c090b;
+  font-weight: 700;
+  border-radius: 50px;
+  border: 1px solid #fff5d6;
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.4), 0 4px 15px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-story-glow:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 35px rgba(212, 175, 55, 0.65), 0 8px 25px rgba(0, 0, 0, 0.7);
+}
+
+.btn-story-glow:active {
+  transform: translateY(0) scale(0.98);
+}
+
+
 
 
