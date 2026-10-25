@@ -9,11 +9,13 @@ import MomentsGallery from './components/MomentsGallery';
 import Blessings from './components/Blessings';
 import Footer from './components/Footer';
 import StoryPosterModal from './components/StoryPosterModal';
+import StoryVideoModal from './components/StoryVideoModal';
 
 export default function App() {
   const [showIntro, setShowIntro] = useState(true);
   const [unmuteVideo, setUnmuteVideo] = useState(false);
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
+  const [isStoryVideoModalOpen, setIsStoryVideoModalOpen] = useState(false);
 
   const handleEnterExperience = () => {
     setShowIntro(false);
@@ -38,12 +40,16 @@ export default function App() {
       {/* Main Experience Layout */}
       {!showIntro && (
         <>
-          <Navbar onOpenStoryModal={() => setIsStoryModalOpen(true)} />
+          <Navbar
+            onOpenStoryModal={() => setIsStoryModalOpen(true)}
+            onOpenVideoModal={() => setIsStoryVideoModalOpen(true)}
+          />
           <main>
             <Hero
               onExplore={handleExploreScroll}
               unmuted={unmuteVideo}
               onOpenStoryModal={() => setIsStoryModalOpen(true)}
+              onOpenVideoModal={() => setIsStoryVideoModalOpen(true)}
             />
             <TheCouple />
             <Ceremonies />
@@ -56,6 +62,12 @@ export default function App() {
           <StoryPosterModal
             isOpen={isStoryModalOpen}
             onClose={() => setIsStoryModalOpen(false)}
+          />
+
+          {/* Cinematic Wedding Story Video Generator Modal */}
+          <StoryVideoModal
+            isOpen={isStoryVideoModalOpen}
+            onClose={() => setIsStoryVideoModalOpen(false)}
           />
         </>
       )}

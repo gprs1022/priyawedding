@@ -14,6 +14,7 @@ import {
   Check,
   Maximize2,
   Minimize2,
+  Film,
 } from 'lucide-react';
 
 
@@ -67,7 +68,7 @@ const getNetworkQuality = () => {
   return { quality: 'balanced', isSlow: false, type: 'Standard' };
 };
 
-export default function Hero({ onExplore, unmuted = false, onOpenStoryModal }) {
+export default function Hero({ onExplore, unmuted = false, onOpenStoryModal, onOpenVideoModal }) {
   const videoRef = useRef(null);
   const theatreRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -834,30 +835,88 @@ export default function Hero({ onExplore, unmuted = false, onOpenStoryModal }) {
           </div>
         </div>
 
-        {/* "Create Our Wedding Story ✨" CTA Button */}
-        <div style={{ marginBottom: '28px', textAlign: 'center' }}>
-          <button
-            type="button"
-            onClick={onOpenStoryModal}
-            className="btn-story-glow"
+        {/* Dual Wedding Story Creation Options: Poster & Cinematic Video */}
+        <div
+          style={{
+            marginBottom: '32px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+            width: '100%',
+          }}
+        >
+          <div
             style={{
-              padding: '13px 28px',
-              fontSize: '1rem',
-              letterSpacing: '0.04em',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '14px',
             }}
           >
-            <Sparkles size={18} color="#0c090b" />
-            <span>Create Our Wedding Story ✨</span>
-          </button>
+            {/* Option 1: Create Wedding Poster */}
+            <button
+              type="button"
+              id="btn-create-poster"
+              onClick={onOpenStoryModal}
+              className="btn-story-glow"
+              style={{
+                padding: '13px 26px',
+                fontSize: '0.98rem',
+                letterSpacing: '0.03em',
+              }}
+            >
+              <Sparkles size={18} color="#0c090b" />
+              <span>Create Wedding Poster 🖼️</span>
+            </button>
+
+            {/* Option 2: Create Wedding Video 🎬 */}
+            <button
+              type="button"
+              id="btn-create-video"
+              onClick={onOpenVideoModal}
+              className="btn-video-cinematic"
+              style={{
+                padding: '13px 26px',
+                fontSize: '0.98rem',
+                letterSpacing: '0.03em',
+                background: 'linear-gradient(135deg, #1f0c2a 0%, #3e1248 50%, #200828 100%)',
+                color: 'var(--gold-light)',
+                border: '1.5px solid var(--gold-primary)',
+                borderRadius: '50px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: 700,
+                boxShadow: '0 0 25px rgba(212, 175, 55, 0.35), 0 4px 15px rgba(0, 0, 0, 0.6)',
+                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
+                e.currentTarget.style.boxShadow = '0 0 35px rgba(212, 175, 55, 0.65), 0 8px 25px rgba(0,0,0,0.7)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = '0 0 25px rgba(212, 175, 55, 0.35), 0 4px 15px rgba(0, 0, 0, 0.6)';
+              }}
+            >
+              <Film size={18} color="var(--gold-primary)" />
+              <span>Create Wedding Video 🎬</span>
+            </button>
+          </div>
+
           <p
             style={{
-              marginTop: '8px',
-              fontSize: '0.78rem',
+              marginTop: '4px',
+              fontSize: '0.8rem',
               color: 'var(--text-muted)',
               letterSpacing: '0.04em',
             }}
           >
-            Generate a personalized 9:16 wedding story to download &amp; share on WhatsApp
+            Create, preview, download &amp; share personalized 9:16 wedding stories directly on WhatsApp
           </p>
         </div>
 

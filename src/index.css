@@ -522,6 +522,18 @@ body {
   transform: translateY(0) scale(0.98);
 }
 
+.btn-story-video-nav:hover {
+  background: linear-gradient(135deg, rgba(55, 18, 72, 0.98), rgba(85, 24, 110, 0.98)) !important;
+  border-color: var(--gold-light) !important;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.45);
+  transform: translateY(-1px);
+}
 
+.btn-video-cinematic:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 35px rgba(212, 175, 55, 0.65), 0 8px 25px rgba(0, 0, 0, 0.7) !important;
+}
 
-
+.btn-video-cinematic:active {
+  transform: translateY(0) scale(0.98);
+}

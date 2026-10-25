@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, Sparkles, Film } from 'lucide-react';
 
 const WhatsAppIcon = ({ size = 16, color = '#25D366' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color} style={{ flexShrink: 0 }}>
@@ -7,7 +7,7 @@ const WhatsAppIcon = ({ size = 16, color = '#25D366' }) => (
   </svg>
 );
 
-export default function Navbar({ onOpenStoryModal }) {
+export default function Navbar({ onOpenStoryModal, onOpenVideoModal }) {
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -108,15 +108,41 @@ export default function Navbar({ onOpenStoryModal }) {
           {/* Story Poster Button */}
           <button
             type="button"
+            id="nav-poster-btn"
             onClick={onOpenStoryModal}
             className="btn-story-glow"
             style={{
-              padding: '8px 18px',
-              fontSize: '0.84rem',
+              padding: '7px 15px',
+              fontSize: '0.82rem',
             }}
           >
-            <Sparkles size={15} color="#0c090b" />
-            <span>Story Poster ✨</span>
+            <Sparkles size={14} color="#0c090b" />
+            <span>Poster ✨</span>
+          </button>
+
+          {/* Story Video Button */}
+          <button
+            type="button"
+            id="nav-video-btn"
+            onClick={onOpenVideoModal}
+            className="btn-story-video-nav"
+            style={{
+              padding: '7px 15px',
+              fontSize: '0.82rem',
+              background: 'linear-gradient(135deg, rgba(32, 10, 42, 0.95), rgba(58, 16, 74, 0.95))',
+              color: 'var(--gold-light)',
+              border: '1px solid var(--border-gold)',
+              borderRadius: '50px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 600,
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <Film size={14} color="var(--gold-primary)" />
+            <span>Video 🎬</span>
           </button>
 
           {/* Integrated WhatsApp "Send Wishes" Action Button */}
@@ -206,7 +232,36 @@ export default function Navbar({ onOpenStoryModal }) {
             }}
           >
             <Sparkles size={17} color="#0c090b" />
-            <span>Create Our Wedding Story ✨</span>
+            <span>Create Wedding Poster 🖼️</span>
+          </button>
+
+          {/* Mobile Story Video Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              onOpenVideoModal();
+            }}
+            style={{
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '12px',
+              fontSize: '0.92rem',
+              width: '100%',
+              borderRadius: '50px',
+              background: 'linear-gradient(135deg, #1f0c2a 0%, #3e1248 50%, #200828 100%)',
+              color: 'var(--gold-light)',
+              border: '1.5px solid var(--gold-primary)',
+              cursor: 'pointer',
+              fontWeight: 700,
+              boxShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
+            }}
+          >
+            <Film size={17} color="var(--gold-primary)" />
+            <span>Create Wedding Video 🎬</span>
           </button>
 
           <a
