@@ -22,6 +22,7 @@ const VIDEO_QUALITIES = {
     key: 'low',
     label: 'Data Saver (360p)',
     badge: '360p Saver',
+    shortBadge: '360p',
     size: '3.6 MB',
     bitrate: '~380 kbps',
     src: '/assets/wedding_teaser_low.mp4',
@@ -31,6 +32,7 @@ const VIDEO_QUALITIES = {
     key: 'balanced',
     label: 'Smooth HD (480p)',
     badge: '480p Smooth',
+    shortBadge: '480p',
     size: '6.7 MB',
     bitrate: '~700 kbps',
     src: '/assets/wedding_teaser_optimized.mp4',
@@ -40,12 +42,14 @@ const VIDEO_QUALITIES = {
     key: 'hd',
     label: 'Full HD (Original)',
     badge: '1080p HD',
+    shortBadge: 'HD',
     size: '24.2 MB',
     bitrate: '~2.5 Mbps',
     src: '/assets/VN20261025_135657.mp4',
     desc: 'Original high-bitrate (requires fast Wi-Fi)',
   },
 };
+
 
 const getNetworkQuality = () => {
   if (typeof navigator !== 'undefined' && 'connection' in navigator) {
@@ -399,10 +403,12 @@ export default function Hero({ onExplore, unmuted = false }) {
 
         {/* Top Floating Bandwidth & Status Pill */}
         <div
+          className="video-top-pill"
           style={{
             position: 'absolute',
             top: '14px',
             left: '16px',
+
             zIndex: 15,
             display: 'inline-flex',
             alignItems: 'center',
@@ -508,57 +514,24 @@ export default function Hero({ onExplore, unmuted = false }) {
             </div>
           )}
 
-          {/* Subtle Bottom Shade for Controls Only */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '90px',
-              background: 'linear-gradient(to top, rgba(12, 9, 11, 0.95), transparent)',
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              padding: '16px 20px',
-              zIndex: 10,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span
-                style={{
-                  fontSize: '0.82rem',
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: 'var(--gold-light)',
-                  fontWeight: 600,
-                }}
-              >
-                Cinematic Wedding Film
-              </span>
+          {/* Video Player Controls Bar */}
+          <div className="video-controls-bar">
+            <div className="video-title-label">
+              <span>Cinematic Wedding Film</span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="video-controls-group">
               {/* Quality Selector Dropdown Menu */}
               <div style={{ position: 'relative' }}>
                 <button
                   type="button"
                   onClick={() => setShowQualityMenu((prev) => !prev)}
                   aria-label="Select streaming quality"
-                  className="btn-gold"
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '0.75rem',
-                    background: 'rgba(10, 16, 38, 0.92)',
-                    color: 'var(--gold-light)',
-                    border: '1px solid var(--border-gold)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                  }}
+                  className="video-quality-pill"
                 >
-                  <Settings size={13} color="var(--gold-primary)" />
-                  <span>{VIDEO_QUALITIES[quality].badge}</span>
+                  <Settings size={12} color="var(--gold-primary)" />
+                  <span className="desktop-only-inline">{VIDEO_QUALITIES[quality].badge}</span>
+                  <span className="mobile-only-inline">{VIDEO_QUALITIES[quality].shortBadge}</span>
                 </button>
 
                 {showQualityMenu && (
@@ -569,6 +542,7 @@ export default function Hero({ onExplore, unmuted = false }) {
                       bottom: '44px',
                       right: 0,
                       width: '260px',
+                      maxWidth: '90vw',
                       padding: '10px',
                       borderRadius: '12px',
                       border: '1px solid var(--border-gold-bright)',
@@ -653,22 +627,22 @@ export default function Hero({ onExplore, unmuted = false }) {
 
               {/* Music On/Off Toggle */}
               <button
+                type="button"
                 onClick={toggleVideoMute}
                 aria-label={isMuted ? 'Unmute Wedding Video Song' : 'Mute Wedding Video Song'}
-                className="btn-gold"
+                className="video-music-btn"
                 style={{
-                  padding: '7px 14px',
-                  fontSize: '0.8rem',
                   background: !isMuted ? 'var(--gold-gradient)' : 'rgba(10, 16, 38, 0.88)',
                   color: !isMuted ? '#12080a' : 'var(--gold-light)',
-                  border: '1px solid var(--border-gold-bright)',
                 }}
               >
                 {!isMuted ? (
                   <>
-                    <Volume2 size={15} />
-                    <span>Music: ON</span>
+                    <Volume2 size={14} />
+                    <span className="desktop-only-inline">Music: ON</span>
+                    <span className="mobile-only-inline">Music</span>
                     <span
+                      className="desktop-only-inline"
                       style={{
                         display: 'inline-flex',
                         alignItems: 'flex-end',
@@ -704,30 +678,21 @@ export default function Hero({ onExplore, unmuted = false }) {
                   </>
                 ) : (
                   <>
-                    <VolumeX size={15} />
-                    <span>Music: OFF</span>
+                    <VolumeX size={14} />
+                    <span className="desktop-only-inline">Music: OFF</span>
+                    <span className="mobile-only-inline">Muted</span>
                   </>
                 )}
               </button>
 
               {/* Play / Pause Toggle */}
               <button
+                type="button"
                 onClick={toggleVideoPlay}
                 aria-label={isPlaying ? 'Pause Video' : 'Play Video'}
-                style={{
-                  background: 'rgba(10, 16, 38, 0.88)',
-                  border: '1px solid var(--border-gold)',
-                  color: 'var(--gold-light)',
-                  borderRadius: '50%',
-                  width: '36px',
-                  height: '36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                }}
+                className="video-ctrl-btn"
               >
-                {isPlaying ? <Pause size={15} /> : <Play size={15} />}
+                {isPlaying ? <Pause size={14} /> : <Play size={14} />}
               </button>
 
               {/* Fullscreen Mode Toggle */}
@@ -736,34 +701,13 @@ export default function Hero({ onExplore, unmuted = false }) {
                 onClick={toggleFullscreen}
                 aria-label={isFullscreen ? 'Exit Full Screen' : 'Enter Full Screen'}
                 title={isFullscreen ? 'Exit Full Screen' : 'Full Screen'}
-                style={{
-                  background: 'rgba(10, 16, 38, 0.88)',
-                  border: '1px solid var(--border-gold)',
-                  color: 'var(--gold-light)',
-                  borderRadius: '50%',
-                  width: '36px',
-                  height: '36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s, border-color 0.2s, transform 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--gold-primary)';
-                  e.currentTarget.style.background = 'rgba(212, 175, 55, 0.2)';
-                  e.currentTarget.style.transform = 'scale(1.08)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-gold)';
-                  e.currentTarget.style.background = 'rgba(10, 16, 38, 0.88)';
-                  e.currentTarget.style.transform = 'scale(1.0)';
-                }}
+                className="video-ctrl-btn"
               >
-                {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+                {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
               </button>
             </div>
           </div>
+
 
         </div>
       </div>
