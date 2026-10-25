@@ -16,6 +16,7 @@ import {
   Heart,
   Palette,
   Check,
+  Video,
 } from 'lucide-react';
 import { weddingConfig, calculateCountdownInfo } from '../config/weddingConfig';
 
@@ -32,6 +33,8 @@ export default function StoryVideoModal({ isOpen, onClose }) {
   const recorderRef = useRef(null);
   const audioCtxRef = useRef(null);
 
+  // Video Mode: 'official-teaser' (uses wedding_teaser_low.mp4) or 'cinematic-countdown' (5-scene generator)
+  const [videoSourceMode, setVideoSourceMode] = useState('official-teaser');
   const [selectedThemeId, setSelectedThemeId] = useState(weddingConfig.posterThemes[0].id);
   const [isGenerating, setIsGenerating] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
@@ -39,8 +42,8 @@ export default function StoryVideoModal({ isOpen, onClose }) {
   const [videoBlobUrl, setVideoBlobUrl] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFormat, setVideoFormat] = useState({ extension: 'mp4', mime: 'video/mp4', label: 'MP4' });
-  const [videoDuration, setVideoDuration] = useState('17s');
-  const [videoSizeFormatted, setVideoSizeFormatted] = useState('');
+  const [videoDuration, setVideoDuration] = useState('34s');
+  const [videoSizeFormatted, setVideoSizeFormatted] = useState('3.6 MB');
   const [toastMessage, setToastMessage] = useState('');
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
@@ -54,24 +57,7 @@ export default function StoryVideoModal({ isOpen, onClose }) {
     setTimeout(() => setToastMessage(''), 4000);
   };
 
-  // Prevent background scrolling when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      // Automatically generate video when modal is opened if none exists
-      if (!videoBlobUrl && !isGenerating) {
-        generateWeddingVideo();
-      }
-    } else {
-      document.body.style.overflow = 'unset';
-      stopActiveRecording();
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-      stopActiveRecording();
-    };
-  }, [isOpen]);
-
+  // Stop active canvas or audio recording tasks
   const stopActiveRecording = () => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
@@ -89,6 +75,57 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       audioCtxRef.current = null;
     }
   };
+
+  // Load the official wedding teaser video clip directly (wedding_teaser_low.mp4)
+  const loadOfficialTeaser = async () => {
+    stopActiveRecording();
+    setIsGenerating(false);
+    setVideoSourceMode('official-teaser');
+    setVideoBlobUrl('/assets/wedding_teaser_low.mp4');
+    setVideoFormat({ extension: 'mp4', mime: 'video/mp4', label: 'Official MP4' });
+    setVideoDuration('34s');
+    setVideoSizeFormatted('3.6 MB');
+    setCurrentSceneStage('Official Wedding Film Teaser (Instant MP4)');
+
+    // Pre-fetch blob for native file sharing
+    try {
+      const res = await fetch('/assets/wedding_teaser_low.mp4');
+      const blob = await res.blob();
+      const file = new File([blob], 'Vinay-Priya-Official-Wedding-Teaser.mp4', { type: 'video/mp4' });
+      setVideoFile(file);
+    } catch (e) {
+      console.warn('Could not pre-fetch teaser blob:', e);
+    }
+  };
+
+  // Switch between Official Teaser & Dynamic Countdown Generator
+  const handleSelectVideoSource = (mode) => {
+    if (mode === videoSourceMode) return;
+    setVideoSourceMode(mode);
+    if (mode === 'official-teaser') {
+      loadOfficialTeaser();
+    } else {
+      generateWeddingVideo();
+    }
+  };
+
+  // Manage modal open / close lifecycle
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      // Default to loading the official teaser video for instant zero-wait experience
+      if (!videoBlobUrl) {
+        loadOfficialTeaser();
+      }
+    } else {
+      document.body.style.overflow = 'unset';
+      stopActiveRecording();
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+      stopActiveRecording();
+    };
+  }, [isOpen]);
 
   // Preload Image Helper with fallback
   const loadImage = (src, fallbackSrc) => {
@@ -111,9 +148,10 @@ export default function StoryVideoModal({ isOpen, onClose }) {
     });
   };
 
-  // Generate the Cinematic Wedding Video
+  // Generate the 5-Scene Cinematic Wedding Video
   const generateWeddingVideo = async () => {
     stopActiveRecording();
+    setVideoSourceMode('cinematic-countdown');
     setIsGenerating(true);
     setRenderProgress(0);
     setCurrentSceneStage('Preparing high-res assets & audio...');
@@ -286,7 +324,7 @@ export default function StoryVideoModal({ isOpen, onClose }) {
         swingAmplitude: 15 + Math.random() * 20,
         rotation: Math.random() * Math.PI * 2,
         rotSpeed: 0.02 + Math.random() * 0.03,
-        color: Math.random() > 0.4 ? 'rgba(235, 77, 75, 0.75)' : 'rgba(243, 156, 18, 0.75)', // Rose & Marigold
+        color: Math.random() > 0.4 ? 'rgba(235, 77, 75, 0.75)' : 'rgba(243, 156, 18, 0.75)',
       }));
 
       // Render Loop
@@ -352,6 +390,7 @@ export default function StoryVideoModal({ isOpen, onClose }) {
 
         const sizeMB = (finalBlob.size / (1024 * 1024)).toFixed(1);
         setVideoSizeFormatted(`${sizeMB} MB`);
+        setVideoDuration('17s');
         setVideoBlobUrl(url);
         setVideoFile(finalFile);
         setIsGenerating(false);
@@ -434,13 +473,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
     drawCornerMotifs(ctx, padInner, padInner, W - padInner, H - padInner, theme.goldPrimary);
 
     // 4. Scene Determination & Cross-Fades
-    // Total: 510 frames
-    // Scene 1: Frames 0 - 100 (0s - 3.33s)
-    // Scene 2: Frames 101 - 200 (3.33s - 6.66s)
-    // Scene 3: Frames 201 - 300 (6.66s - 10.0s)
-    // Scene 4: Frames 301 - 400 (10.0s - 13.33s)
-    // Scene 5: Frames 401 - 510 (13.33s - 17.0s)
-
     if (frame < 100) {
       // ===== SCENE 1: SACRED OPENING =====
       const sceneProg = frame / 100;
@@ -449,7 +481,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.save();
       ctx.globalAlpha = alpha;
 
-      // Radial Golden Aura behind sacred text
       const glow = ctx.createRadialGradient(W / 2, 420, 20, W / 2, 420, 320);
       glow.addColorStop(0, 'rgba(212, 175, 55, 0.28)');
       glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
@@ -459,7 +490,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Sacred Sanskrit Invocation
       ctx.font = '700 36px "Rozha One", "Yatra One", serif';
       ctx.fillStyle = theme.goldLight;
       ctx.shadowColor = 'rgba(212, 175, 55, 0.8)';
@@ -467,17 +497,14 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fillText(weddingConfig.sacredInvocation, W / 2, 340);
       ctx.shadowBlur = 0;
 
-      // Subheading
       ctx.font = '600 17px "Cormorant Garamond", serif';
       ctx.fillStyle = theme.goldPrimary;
       ctx.letterSpacing = '4px';
       ctx.fillText('THE ROYAL WEDDING CELEBRATION', W / 2, 400);
       ctx.letterSpacing = '0px';
 
-      // Floral Divider
       drawFloralDivider(ctx, W / 2, 445, 260, theme.goldPrimary);
 
-      // Couple Names with shimmering reveal
       const nameScale = 1.0 + Math.sin(sceneProg * Math.PI) * 0.04;
       ctx.save();
       ctx.translate(W / 2, 530);
@@ -500,7 +527,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fillText('Priya Singh', 0, 110);
       ctx.restore();
 
-      // Opening blessing
       ctx.font = 'italic 400 20px "Cormorant Garamond", serif';
       ctx.fillStyle = theme.goldLight;
       ctx.fillText('“A match made in heaven, sealed with sacred rituals.”', W / 2, 790);
@@ -517,29 +543,24 @@ export default function StoryVideoModal({ isOpen, onClose }) {
 
       ctx.save();
       ctx.globalAlpha = Math.max(0.05, alpha);
-
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Scene Title
       ctx.font = '600 16px "Plus Jakarta Sans", sans-serif';
       ctx.fillStyle = theme.goldPrimary;
       ctx.letterSpacing = '3px';
       ctx.fillText('CHAPTER I : SACRED UNION', W / 2, 120);
       ctx.letterSpacing = '0px';
 
-      // Centerpiece Arch with Ken Burns Zoom & Pan
       const archW = 540;
       const archH = 640;
       const archX = (W - archW) / 2;
       const archY = 170;
 
-      // Ken Burns scale from 1.00 to 1.14
       const zoom = 1.0 + sceneProg * 0.14;
       const driftY = sceneProg * 12;
 
       ctx.save();
-      // Arch Drop Shadow
       ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
       ctx.shadowBlur = 30;
       ctx.shadowOffsetY = 12;
@@ -548,7 +569,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fill();
       ctx.restore();
 
-      // Clip to arch
       ctx.save();
       drawRoyalArch(ctx, archX, archY, archW, archH, 26);
       ctx.clip();
@@ -560,7 +580,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
         ctx.fillRect(archX, archY, archW, archH);
       }
 
-      // Arch bottom gradient vignette
       const vig = ctx.createLinearGradient(0, archY + archH - 140, 0, archY + archH);
       vig.addColorStop(0, 'rgba(0,0,0,0)');
       vig.addColorStop(1, 'rgba(6, 9, 24, 0.7)');
@@ -568,7 +587,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fillRect(archX, archY, archW, archH);
       ctx.restore();
 
-      // Arch Borders
       ctx.strokeStyle = theme.goldPrimary;
       ctx.lineWidth = 3;
       drawRoyalArch(ctx, archX, archY, archW, archH, 26);
@@ -576,13 +594,11 @@ export default function StoryVideoModal({ isOpen, onClose }) {
 
       drawArchCrownFinial(ctx, W / 2, archY, theme.goldPrimary);
 
-      // Romantic Wedding Quote Below Photo
       ctx.font = 'italic 400 22px "Cormorant Garamond", serif';
       ctx.fillStyle = theme.goldLight;
       ctx.fillText('“Two souls, two families, united by destiny,', W / 2, 875);
       ctx.fillText('blessed by tradition, bound forever.”', W / 2, 910);
 
-      // Names Banner
       drawFloralDivider(ctx, W / 2, 960, 220, theme.goldPrimary);
       ctx.font = '700 28px "Playfair Display", Georgia, serif';
       ctx.fillStyle = '#ffffff';
@@ -599,7 +615,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Header
       ctx.font = '700 32px "Rozha One", serif';
       ctx.fillStyle = theme.goldPrimary;
       ctx.fillText('॥ मङ्गलम् भगवान विष्णुः ॥', W / 2, 180);
@@ -612,7 +627,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
 
       drawFloralDivider(ctx, W / 2, 275, 260, theme.goldPrimary);
 
-      // Giant Dynamic Countdown Headline (Prompt guidelines)
       ctx.font = '700 38px "Playfair Display", Georgia, serif';
       const cdGrad = ctx.createLinearGradient(W / 2 - 250, 0, W / 2 + 250, 0);
       cdGrad.addColorStop(0, '#fff4cf');
@@ -625,7 +639,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
       ctx.fillText(cd.subtext, W / 2, 400);
 
-      // Glowing Countdown Units (Dials)
       const dialUnits = [
         { label: 'DAYS', val: String(cd.days).padStart(2, '0') },
         { label: 'HOURS', val: String(cd.hours).padStart(2, '0') },
@@ -641,7 +654,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
 
       dialUnits.forEach((unit, idx) => {
         const x = startX + idx * (dialW + gap);
-        // Dial container
         ctx.fillStyle = 'rgba(8, 14, 36, 0.9)';
         ctx.strokeStyle = theme.frameBorder;
         ctx.lineWidth = 2;
@@ -652,12 +664,10 @@ export default function StoryVideoModal({ isOpen, onClose }) {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Dial Value
         ctx.font = '700 52px "Playfair Display", Georgia, serif';
         ctx.fillStyle = '#ffffff';
         ctx.fillText(unit.val, x + dialW / 2, dialY + 62);
 
-        // Dial Label
         ctx.font = '600 13px "Plus Jakarta Sans", sans-serif';
         ctx.fillStyle = theme.goldPrimary;
         ctx.letterSpacing = '2px';
@@ -665,7 +675,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
         ctx.letterSpacing = '0px';
       });
 
-      // Date & Venue Details Card
       const cardW = 560;
       const cardH = 150;
       const cardX = (W - cardW) / 2;
@@ -686,7 +695,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fillStyle = theme.goldLight;
       ctx.fillText(`📍 ${weddingConfig.venueDetail}`, W / 2, cardY + 95);
 
-      // Sanskrit Shloka
       ctx.font = '500 18px "Rozha One", serif';
       ctx.fillStyle = 'rgba(212, 175, 55, 0.88)';
       ctx.fillText('॥ परस्परं भावयन्तः श्रेयः परमवाप्स्यथ ॥', W / 2, 885);
@@ -702,20 +710,17 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Celebration Header
       ctx.font = '600 16px "Plus Jakarta Sans", sans-serif';
       ctx.fillStyle = theme.goldPrimary;
       ctx.letterSpacing = '3px';
       ctx.fillText('CELEBRATION OF SACRED LOVE', W / 2, 120);
       ctx.letterSpacing = '0px';
 
-      // Haldi / Sangeet Photo in Royal Arch
       const archW = 540;
       const archH = 640;
       const archX = (W - archW) / 2;
       const archY = 160;
 
-      // Gentle Ken Burns pan
       const zoom = 1.02 + sceneProg * 0.12;
       const driftY = -sceneProg * 10;
 
@@ -729,7 +734,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
         drawImageKenBurns(ctx, coupleImg, archX, archY, archW, archH, zoom, driftY);
       }
 
-      // Warm amber celebration lighting
       const amberGlow = ctx.createRadialGradient(W / 2, archY + 100, 20, W / 2, archY + 100, 400);
       amberGlow.addColorStop(0, 'rgba(243, 156, 18, 0.22)');
       amberGlow.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
@@ -737,7 +741,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fillRect(archX, archY, archW, archH);
       ctx.restore();
 
-      // Arch Border
       ctx.strokeStyle = theme.goldPrimary;
       ctx.lineWidth = 3;
       drawRoyalArch(ctx, archX, archY, archW, archH, 26);
@@ -745,7 +748,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
 
       drawArchCrownFinial(ctx, W / 2, archY, theme.goldPrimary);
 
-      // Floating Rose & Marigold Petals (Celebration scene physics)
       petals.forEach((petal) => {
         petal.y += petal.speedY;
         petal.rotation += petal.rotSpeed;
@@ -766,7 +768,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
         ctx.restore();
       });
 
-      // Celebration Rites Text
       ctx.font = '700 28px "Playfair Display", Georgia, serif';
       ctx.fillStyle = '#ffffff';
       ctx.fillText('Haldi • Sangeet • Saat Phere', W / 2, 860);
@@ -794,19 +795,16 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Sacred Invocation Badge
       ctx.font = '700 32px "Rozha One", serif';
       ctx.fillStyle = theme.goldPrimary;
       ctx.fillText('॥ श्री गणेशाय नमः ॥', W / 2, 140);
 
-      // Closing Invitation
       ctx.font = 'italic 400 24px "Cormorant Garamond", serif';
       ctx.fillStyle = theme.goldLight;
       ctx.fillText('Join Us in Celebrating Our Love', W / 2, 195);
 
       drawFloralDivider(ctx, W / 2, 235, 280, theme.goldPrimary);
 
-      // Couple Names Headline
       ctx.font = '700 46px "Playfair Display", Georgia, serif';
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = 'rgba(212, 175, 55, 0.6)';
@@ -825,7 +823,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fillText('Priya Singh', W / 2, 395);
       ctx.shadowBlur = 0;
 
-      // Circular Centerpiece Cameo with Gold Ring
       const cameoR = 145;
       const cameoX = W / 2;
       const cameoY = 575;
@@ -850,14 +847,12 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       }
       ctx.restore();
 
-      // Cameo Gold Border
       ctx.strokeStyle = theme.goldPrimary;
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.arc(cameoX, cameoY, cameoR, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Date & Venue Details Card
       const endCardW = 560;
       const endCardH = 160;
       const endCardX = (W - endCardW) / 2;
@@ -884,7 +879,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       ctx.fillText('SATNA, MADHYA PRADESH', W / 2, endCardY + 122);
       ctx.letterSpacing = '0px';
 
-      // Blessings & Hashtag
       drawFloralDivider(ctx, W / 2, 980, 260, theme.goldPrimary);
 
       ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
@@ -1069,17 +1063,33 @@ export default function StoryVideoModal({ isOpen, onClose }) {
     ctx.restore();
   };
 
-  // Action: Download Video
+  // Action: Download Video (Handles both Official Teaser MP4 & Generated Story Video)
   const handleDownloadVideo = () => {
-    if (!videoBlobUrl || !videoFile) return;
+    if (!videoBlobUrl) return;
+    const isTeaser = videoSourceMode === 'official-teaser';
+    const fileName = isTeaser
+      ? 'Vinay-Priya-Official-Wedding-Teaser.mp4'
+      : (videoFile?.name || `Vinay-Priya-Wedding-Story.${videoFormat.extension}`);
+
     try {
-      const a = document.createElement('a');
-      a.href = videoBlobUrl;
-      a.download = videoFile.name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      showToast(`🎬 Video downloaded as ${videoFile.name}!`);
+      if (videoFile) {
+        const url = URL.createObjectURL(videoFile);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      } else {
+        const a = document.createElement('a');
+        a.href = videoBlobUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      showToast(`🎬 Video downloaded as ${fileName}!`);
     } catch (err) {
       console.error(err);
       showToast('Download failed. Please check browser permissions.');
@@ -1090,15 +1100,31 @@ export default function StoryVideoModal({ isOpen, onClose }) {
   const handleWhatsAppShare = async () => {
     if (!videoBlobUrl) return;
 
-    const caption = `💍 *Vinay Singh & Priya Singh — Wedding Story Video* 🎬💐\n\n✨ *${countdown.headline}*\n🗓️ *Date:* 26th November 2026\n📍 *Venue:* Satna, Madhya Pradesh\n\nJoin us in celebrating our holy matrimony:\n🌐 ${weddingConfig.websiteUrl}\n\n#PriyaWedsVinay`;
+    const isTeaser = videoSourceMode === 'official-teaser';
+    const title = isTeaser
+      ? 'Official Wedding Film Teaser — Vinay & Priya'
+      : 'Wedding Story Video — Vinay & Priya';
+    const caption = `💍 *Vinay Singh & Priya Singh — ${isTeaser ? 'Official Wedding Teaser Film' : 'Wedding Story Video'}* 🎬💐\n\n✨ *${countdown.headline}*\n🗓️ *Date:* 26th November 2026\n📍 *Venue:* Satna, Madhya Pradesh\n\nJoin us in celebrating our holy matrimony:\n🌐 ${weddingConfig.websiteUrl}\n\n#PriyaWedsVinay`;
+
+    let fileToShare = videoFile;
+    if (!fileToShare && videoBlobUrl) {
+      try {
+        const blob = await (await fetch(videoBlobUrl)).blob();
+        fileToShare = new File(
+          [blob],
+          isTeaser ? 'Vinay-Priya-Official-Wedding-Teaser.mp4' : 'Vinay-Priya-Wedding-Story.mp4',
+          { type: blob.type || 'video/mp4' }
+        );
+      } catch (e) {}
+    }
 
     // 1. Try Native Web Share with actual Video File
-    if (videoFile && navigator.canShare) {
+    if (fileToShare && navigator.canShare) {
       try {
-        if (navigator.canShare({ files: [videoFile] })) {
+        if (navigator.canShare({ files: [fileToShare] })) {
           await navigator.share({
-            files: [videoFile],
-            title: 'Vinay & Priya Wedding Story Video',
+            files: [fileToShare],
+            title,
             text: caption,
           });
           showToast('Shared successfully!');
@@ -1124,9 +1150,10 @@ export default function StoryVideoModal({ isOpen, onClose }) {
 
   // Action: Share More (Native Web Share / Link)
   const handleShareMore = async () => {
+    const isTeaser = videoSourceMode === 'official-teaser';
     const shareData = {
-      title: 'Vinay & Priya Wedding Video',
-      text: `Watch the cinematic countdown film for Vinay & Priya! ${countdown.headline} 🎬`,
+      title: isTeaser ? 'Vinay & Priya Official Wedding Film' : 'Vinay & Priya Wedding Video',
+      text: `Watch the wedding film for Vinay & Priya! ${countdown.headline} 🎬`,
       url: weddingConfig.websiteUrl,
     };
 
@@ -1152,18 +1179,6 @@ export default function StoryVideoModal({ isOpen, onClose }) {
       .catch(() => {
         showToast('Link: ' + weddingConfig.websiteUrl);
       });
-  };
-
-  const togglePreviewPlay = () => {
-    if (previewVideoRef.current) {
-      if (previewVideoRef.current.paused) {
-        previewVideoRef.current.play();
-        setIsVideoPlaying(true);
-      } else {
-        previewVideoRef.current.pause();
-        setIsVideoPlaying(false);
-      }
-    }
   };
 
   if (!isOpen) return null;
@@ -1238,7 +1253,7 @@ export default function StoryVideoModal({ isOpen, onClose }) {
                 Wedding Story Video Generator 🎬
               </h2>
               <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Cinematic 9:16 Countdown Film for WhatsApp Status &amp; Reels
+                Official Wedding Teaser Film &amp; Personalized 9:16 Countdown Story
               </p>
             </div>
           </div>
@@ -1288,7 +1303,7 @@ export default function StoryVideoModal({ isOpen, onClose }) {
               minHeight: '400px',
             }}
           >
-            {/* Hidden Off-Screen Canvas used for rendering frames */}
+            {/* Hidden Off-Screen Canvas used for rendering countdown frames */}
             <canvas ref={canvasRef} style={{ display: 'none' }} width={720} height={1280} />
 
             <div
@@ -1311,6 +1326,7 @@ export default function StoryVideoModal({ isOpen, onClose }) {
               {videoBlobUrl && !isGenerating && (
                 <video
                   ref={previewVideoRef}
+                  key={videoBlobUrl}
                   src={videoBlobUrl}
                   controls
                   playsInline
@@ -1443,9 +1459,11 @@ export default function StoryVideoModal({ isOpen, onClose }) {
                 >
                   {videoFormat.label}
                 </span>
-                <span>• 720 × 1280 (9:16)</span>
                 <span>• {videoDuration}</span>
                 {videoSizeFormatted && <span>• {videoSizeFormatted}</span>}
+                {videoSourceMode === 'official-teaser' && (
+                  <span style={{ color: 'var(--gold-primary)', fontWeight: 600 }}>• Official Teaser Film</span>
+                )}
               </div>
             )}
           </div>
@@ -1457,40 +1475,10 @@ export default function StoryVideoModal({ isOpen, onClose }) {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              gap: '20px',
+              gap: '18px',
             }}
           >
-            {/* Countdown Highlights Banner */}
-            <div
-              style={{
-                background: 'rgba(212, 175, 55, 0.08)',
-                border: '1px solid var(--border-gold)',
-                borderRadius: '14px',
-                padding: '14px 18px',
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '4px',
-                }}
-              >
-                <Heart size={16} color="var(--gold-primary)" fill="var(--gold-primary)" />
-                <span
-                  className="font-serif gold-gradient-text"
-                  style={{ fontSize: '1.05rem', fontWeight: 700 }}
-                >
-                  {countdown.headline}
-                </span>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                {countdown.subtext} • 26th November 2026, Satna
-              </p>
-            </div>
-
-            {/* Scene Sequence Preview Breakdown */}
+            {/* Video Selection: Official Wedding Film Teaser vs Dynamic Countdown Film */}
             <div>
               <div
                 style={{
@@ -1505,139 +1493,312 @@ export default function StoryVideoModal({ isOpen, onClose }) {
                 }}
               >
                 <Film size={15} color="var(--gold-primary)" />
-                <span>Cinematic 5-Scene Sequence</span>
+                <span>Select Story Video Style</span>
               </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr',
-                  gap: '6px',
-                  fontSize: '0.76rem',
-                }}
-              >
-                {[
-                  { num: '1', title: 'Sacred Opening', desc: '॥ श्री गणेशाय नमः ॥ & Animated Couple Names' },
-                  { num: '2', title: 'Their Story', desc: 'Ken Burns Zoom on Vinay & Priya Royal Portrait' },
-                  { num: '3', title: 'Countdown', desc: `${countdown.headline} & Auspicious Dials` },
-                  { num: '4', title: 'Celebration', desc: 'Haldi Ceremony & Drifting Rose/Marigold Petals' },
-                  { num: '5', title: 'Grand Closing', desc: '26 Nov 2026, Satna Venue & #PriyaWedsVinay' },
-                ].map((s) => (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {/* Option 1: Official Wedding Film Teaser (wedding_teaser_low.mp4) */}
+                <button
+                  type="button"
+                  id="btn-select-teaser"
+                  disabled={isGenerating}
+                  onClick={() => handleSelectVideoSource('official-teaser')}
+                  style={{
+                    padding: '12px 10px',
+                    borderRadius: '12px',
+                    background:
+                      videoSourceMode === 'official-teaser'
+                        ? 'rgba(212, 175, 55, 0.22)'
+                        : 'rgba(255, 255, 255, 0.04)',
+                    border:
+                      videoSourceMode === 'official-teaser'
+                        ? '2px solid var(--gold-primary)'
+                        : '1px solid rgba(212, 175, 55, 0.25)',
+                    cursor: isGenerating ? 'not-allowed' : 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                  }}
+                >
                   <div
-                    key={s.num}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
-                      padding: '6px 10px',
-                      borderRadius: '8px',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(212, 175, 55, 0.15)',
+                      justifyContent: 'space-between',
+                      width: '100%',
                     }}
                   >
-                    <span
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: 'rgba(212, 175, 55, 0.2)',
-                        color: 'var(--gold-primary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 700,
-                        fontSize: '0.7rem',
-                      }}
-                    >
-                      {s.num}
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold-light)' }}>
+                      Official Film Teaser 🎬
                     </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontWeight: 600, color: 'var(--gold-light)', marginRight: '6px' }}>
-                        {s.title}:
-                      </span>
-                      <span style={{ color: 'var(--text-muted)' }}>{s.desc}</span>
-                    </div>
+                    {videoSourceMode === 'official-teaser' && (
+                      <Check size={14} color="var(--gold-primary)" />
+                    )}
                   </div>
-                ))}
+                  <p style={{ margin: 0, fontSize: '0.71rem', color: 'var(--text-muted)', lineHeight: 1.3 }}>
+                    Original wedding teaser clip with authentic song (MP4, 3.6 MB)
+                  </p>
+                </button>
+
+                {/* Option 2: Dynamic Countdown Story Film */}
+                <button
+                  type="button"
+                  id="btn-select-countdown"
+                  disabled={isGenerating}
+                  onClick={() => handleSelectVideoSource('cinematic-countdown')}
+                  style={{
+                    padding: '12px 10px',
+                    borderRadius: '12px',
+                    background:
+                      videoSourceMode === 'cinematic-countdown'
+                        ? 'rgba(212, 175, 55, 0.22)'
+                        : 'rgba(255, 255, 255, 0.04)',
+                    border:
+                      videoSourceMode === 'cinematic-countdown'
+                        ? '2px solid var(--gold-primary)'
+                        : '1px solid rgba(212, 175, 55, 0.25)',
+                    cursor: isGenerating ? 'not-allowed' : 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold-light)' }}>
+                      Countdown Story ✨
+                    </span>
+                    {videoSourceMode === 'cinematic-countdown' && (
+                      <Check size={14} color="var(--gold-primary)" />
+                    )}
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.71rem', color: 'var(--text-muted)', lineHeight: 1.3 }}>
+                    5-Scene personalized countdown film with royal montage
+                  </p>
+                </button>
               </div>
             </div>
 
-            {/* Theme Selector for Visual Tone */}
-            <div>
+            {/* Countdown Highlights Banner */}
+            <div
+              style={{
+                background: 'rgba(212, 175, 55, 0.08)',
+                border: '1px solid var(--border-gold)',
+                borderRadius: '14px',
+                padding: '12px 16px',
+              }}
+            >
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  marginBottom: '10px',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  color: 'var(--gold-light)',
-                  letterSpacing: '0.04em',
+                  marginBottom: '2px',
                 }}
               >
-                <Palette size={15} color="var(--gold-primary)" />
-                <span>Select Color Atmosphere</span>
+                <Heart size={16} color="var(--gold-primary)" fill="var(--gold-primary)" />
+                <span
+                  className="font-serif gold-gradient-text"
+                  style={{ fontSize: '1rem', fontWeight: 700 }}
+                >
+                  {countdown.headline}
+                </span>
               </div>
+              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                {countdown.subtext} • 26th November 2026, Satna
+              </p>
+            </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                {weddingConfig.posterThemes.map((theme) => {
-                  const isSelected = selectedThemeId === theme.id;
-                  return (
-                    <button
-                      key={theme.id}
-                      type="button"
-                      disabled={isGenerating}
-                      onClick={() => {
-                        setSelectedThemeId(theme.id);
-                        setTimeout(() => generateWeddingVideo(), 50);
-                      }}
+            {/* Dynamic Content details depending on selected mode */}
+            {videoSourceMode === 'official-teaser' ? (
+              <div
+                style={{
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Video size={16} color="var(--gold-primary)" />
+                  <span style={{ fontWeight: 600, fontSize: '0.84rem', color: 'var(--gold-light)' }}>
+                    Original Wedding Film Teaser (High Quality MP4)
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                  Featuring actual cinematic shots of Vinay &amp; Priya with authentic traditional wedding music.
+                  Optimized for instant mobile download and WhatsApp status sharing.
+                </p>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '0.72rem', color: 'var(--gold-light)' }}>
+                  <span>✓ 100% WhatsApp Compatible</span>
+                  <span>✓ Complete Audio Track</span>
+                  <span>✓ 3.6 MB Data Saver</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '8px',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    color: 'var(--gold-light)',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  <Film size={14} color="var(--gold-primary)" />
+                  <span>Cinematic 5-Scene Sequence</span>
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr',
+                    gap: '5px',
+                    fontSize: '0.74rem',
+                  }}
+                >
+                  {[
+                    { num: '1', title: 'Sacred Opening', desc: '॥ श्री गणेशाय नमः ॥ & Animated Names' },
+                    { num: '2', title: 'Their Story', desc: 'Ken Burns Zoom on Vinay & Priya Portrait' },
+                    { num: '3', title: 'Countdown', desc: `${countdown.headline} & Dials` },
+                    { num: '4', title: 'Celebration', desc: 'Haldi Bliss & Drifting Rose Petals' },
+                    { num: '5', title: 'Grand Closing', desc: '26 Nov 2026, Satna & #PriyaWedsVinay' },
+                  ].map((s) => (
+                    <div
+                      key={s.num}
                       style={{
-                        padding: '10px 8px',
-                        borderRadius: '10px',
-                        background: isSelected
-                          ? 'rgba(212, 175, 55, 0.2)'
-                          : 'rgba(255, 255, 255, 0.04)',
-                        border: isSelected
-                          ? '2px solid var(--gold-primary)'
-                          : '1px solid rgba(212, 175, 55, 0.25)',
-                        cursor: isGenerating ? 'not-allowed' : 'pointer',
-                        textAlign: 'center',
-                        transition: 'all 0.2s',
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '6px',
+                        gap: '8px',
+                        padding: '5px 8px',
+                        borderRadius: '6px',
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(212, 175, 55, 0.15)',
                       }}
                     >
-                      <div
+                      <span
                         style={{
-                          width: '26px',
-                          height: '26px',
+                          width: '18px',
+                          height: '18px',
                           borderRadius: '50%',
-                          background: `linear-gradient(135deg, ${theme.bgGradient[1]}, ${theme.goldPrimary})`,
-                          border: '2px solid #ffffff',
+                          background: 'rgba(212, 175, 55, 0.2)',
+                          color: 'var(--gold-primary)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: '0.68rem',
                         }}
                       >
-                        {isSelected && <Check size={14} color="#0c090b" strokeWidth={3} />}
-                      </div>
-                      <span
-                        style={{
-                          fontSize: '0.72rem',
-                          fontWeight: 600,
-                          color: isSelected ? '#ffffff' : 'var(--text-muted)',
-                        }}
-                      >
-                        {theme.previewBadge}
+                        {s.num}
                       </span>
-                    </button>
-                  );
-                })}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontWeight: 600, color: 'var(--gold-light)', marginRight: '6px' }}>
+                          {s.title}:
+                        </span>
+                        <span style={{ color: 'var(--text-muted)' }}>{s.desc}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Theme Selector for Visual Tone (Shown in countdown mode) */}
+            {videoSourceMode === 'cinematic-countdown' && (
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '8px',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    color: 'var(--gold-light)',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  <Palette size={14} color="var(--gold-primary)" />
+                  <span>Select Color Atmosphere</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  {weddingConfig.posterThemes.map((theme) => {
+                    const isSelected = selectedThemeId === theme.id;
+                    return (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        disabled={isGenerating}
+                        onClick={() => {
+                          setSelectedThemeId(theme.id);
+                          setTimeout(() => generateWeddingVideo(), 50);
+                        }}
+                        style={{
+                          padding: '8px 6px',
+                          borderRadius: '10px',
+                          background: isSelected
+                            ? 'rgba(212, 175, 55, 0.2)'
+                            : 'rgba(255, 255, 255, 0.04)',
+                          border: isSelected
+                            ? '2px solid var(--gold-primary)'
+                            : '1px solid rgba(212, 175, 55, 0.25)',
+                          cursor: isGenerating ? 'not-allowed' : 'pointer',
+                          textAlign: 'center',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '22px',
+                            height: '22px',
+                            borderRadius: '50%',
+                            background: `linear-gradient(135deg, ${theme.bgGradient[1]}, ${theme.goldPrimary})`,
+                            border: '1.5px solid #ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {isSelected && <Check size={12} color="#0c090b" strokeWidth={3} />}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                          }}
+                        >
+                          {theme.previewBadge}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Action Buttons Section */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 'auto' }}>
@@ -1665,14 +1826,19 @@ export default function StoryVideoModal({ isOpen, onClose }) {
                 }}
               >
                 <WhatsAppIcon size={20} color="#ffffff" />
-                <span>Share Video on WhatsApp</span>
+                <span>
+                  {videoSourceMode === 'official-teaser'
+                    ? 'Share Teaser Video on WhatsApp'
+                    : 'Share Story Video on WhatsApp'}
+                </span>
               </button>
 
-              {/* Download & More Share Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {/* Download & Regenerate Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: videoSourceMode === 'cinematic-countdown' ? '1fr 1fr' : '1fr', gap: '10px' }}>
                 {/* Download Button */}
                 <button
                   type="button"
+                  id="btn-download-video-modal"
                   onClick={handleDownloadVideo}
                   disabled={isGenerating || !videoBlobUrl}
                   className="btn-story-glow"
@@ -1685,33 +1851,39 @@ export default function StoryVideoModal({ isOpen, onClose }) {
                   }}
                 >
                   <Download size={16} color="#0c090b" />
-                  <span>Download Video</span>
+                  <span>
+                    {videoSourceMode === 'official-teaser'
+                      ? 'Download Teaser Video (MP4)'
+                      : 'Download Story Video'}
+                  </span>
                 </button>
 
-                {/* Regenerate Button */}
-                <button
-                  type="button"
-                  onClick={generateWeddingVideo}
-                  disabled={isGenerating}
-                  style={{
-                    padding: '11px 16px',
-                    fontSize: '0.88rem',
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    color: 'var(--gold-light)',
-                    border: '1px solid var(--border-gold)',
-                    borderRadius: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    cursor: isGenerating ? 'not-allowed' : 'pointer',
-                    fontWeight: 600,
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <RotateCcw size={15} color="var(--gold-primary)" />
-                  <span>Regenerate</span>
-                </button>
+                {/* Regenerate Button (in countdown mode) */}
+                {videoSourceMode === 'cinematic-countdown' && (
+                  <button
+                    type="button"
+                    onClick={generateWeddingVideo}
+                    disabled={isGenerating}
+                    style={{
+                      padding: '11px 16px',
+                      fontSize: '0.88rem',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      color: 'var(--gold-light)',
+                      border: '1px solid var(--border-gold)',
+                      borderRadius: '50px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      cursor: isGenerating ? 'not-allowed' : 'pointer',
+                      fontWeight: 600,
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <RotateCcw size={15} color="var(--gold-primary)" />
+                    <span>Regenerate</span>
+                  </button>
+                )}
               </div>
 
               {/* Share More / Copy Link Button */}
@@ -1732,7 +1904,7 @@ export default function StoryVideoModal({ isOpen, onClose }) {
                 }}
               >
                 <Share2 size={13} color="var(--gold-primary)" />
-                <span>Share invitation link via other apps</span>
+                <span>Share wedding invitation link via other apps</span>
               </button>
             </div>
           </div>

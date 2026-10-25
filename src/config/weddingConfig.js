@@ -55,6 +55,32 @@ export const weddingConfig = {
     },
   ],
 
+  // Available video sources for Story Video Generator & direct download
+  storyVideos: [
+    {
+      id: 'official-teaser',
+      name: 'Official Wedding Film Teaser 🎬',
+      shortName: 'Official Teaser',
+      src: '/assets/wedding_teaser_low.mp4',
+      hdSrc: '/assets/wedding_teaser_optimized.mp4',
+      fileName: 'Vinay-Priya-Official-Wedding-Teaser.mp4',
+      format: 'MP4 (Universal)',
+      size: '3.6 MB',
+      duration: '34s',
+      description: 'Original cinematic wedding teaser film with authentic song & visuals of Vinay & Priya',
+    },
+    {
+      id: 'cinematic-countdown',
+      name: 'Cinematic Countdown Film ✨',
+      shortName: 'Countdown Film',
+      fileName: 'Vinay-Priya-Wedding-Story',
+      format: '9:16 Story Video',
+      size: '~4.2 MB',
+      duration: '17s',
+      description: '5-Scene personalized countdown film with live countdown dials, shlokas & royal montage',
+    },
+  ],
+
   // Visual Themes for the Story Poster Generator (1080x1920)
   posterThemes: [
     {
