@@ -189,6 +189,8 @@ export default function Hero({ onExplore, unmuted = false }) {
             loop
             muted={isMuted}
             playsInline
+            preload="auto"
+            poster="/assets/WhatsApp Image 2026-10-25 at 9.14.08 AM.jpeg"
             style={{
               position: 'absolute',
               top: 0,
